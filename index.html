@@ -1399,6 +1399,7 @@
                     if(icon) { icon.className = 'fa-solid fa-sun'; icon.style.color = '#fde047'; }
                 }, 100);
             }
+            }); // <--- CHÍNH LÀ DÒNG NÀY ĐÃ BỊ THIẾU
         // --- 1. GHI ĐÈ HÀM showToast BẰNG SWEETALERT2 ---
         window.showToast = function(msg, type = 'success') {
             Swal.fire({
@@ -2741,7 +2742,7 @@ function updateTeamPoint(tId, critId, delta) {
 }
 
         // Hàm mới: Chuyên xử lý giao dịch Ví Tiền (Cộng/Trừ có lý do và lưu lịch sử)
-function updateTeamWallet(tId, delta) {
+    async function updateTeamWallet(tId, delta) {
     if(currentUser.role === 'collab') return showToast("Hỗ trợ viên không được xử lý tiền!", "error");
     
     let tIndex = state.teams.findIndex(x => x.id == tId);
