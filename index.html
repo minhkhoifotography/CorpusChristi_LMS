@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -736,6 +737,10 @@
             <div id="tab-students" class="tab-content">
                 <div class="page-header">
                     <div><h1>Hồ Sơ Sơ Yếu Lý Lịch</h1><p>Danh sách cố định theo thứ tự file Excel gốc.</p></div>
+                    <!-- Đặt cạnh nút Xuất Excel -->
+                    <button class="btn-action" style="background: var(--danger);" onclick="exportTableToPDF('academicTable', 'Bang_Diem_Hoc_Ba')">
+                        <i class="fa-solid fa-file-pdf"></i> Xuất Báo Cáo PDF
+                    </button>
                     <button class="btn-action" onclick="exportStudentProfiles()"><i class="fa-solid fa-file-excel"></i> Xuất Excel Lý Lịch</button>
                 </div>
                 <div class="card">
@@ -860,6 +865,10 @@
                 <div class="page-header">
                     <div><h1>Sổ Điểm Học Bạ & Đánh Giá</h1><p>Danh sách cố định theo thứ tự file Excel gốc.</p></div>
                     <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <!-- Đặt cạnh nút Xuất Excel -->
+                        <button class="btn-action" style="background: var(--danger);" onclick="exportTableToPDF('academicTable', 'Bang_Diem_Hoc_Ba')">
+                            <i class="fa-solid fa-file-pdf"></i> Xuất Báo Cáo PDF
+                        </button>
                         <button class="btn-action btn-outline" onclick="exportAcademicSheet()"><i class="fa-solid fa-file-excel"></i> Xuất Báo Cáo Chuẩn (Excel)</button>
                         <div id="academicActions"></div>
                     </div>
@@ -1370,6 +1379,59 @@
             </div> <!-- THÊM DÒNG NÀY: Đóng thẻ content-area -->
     </main> <!-- THÊM DÒNG NÀY: Đóng thẻ main-content -->
     <script>
+        function exportTableToPDF(tableId, fileNamePrefix) {
+            showToast("Đang khởi tạo PDF, vui lòng không tắt trang...", "info");
+            
+            const element = document.getElementById(tableId);
+            if(!element) return;
+
+            // Tùy chỉnh thông số dàn trang (Khổ A4, nằm ngang)
+            const opt = {
+                margin:       0.5,
+                filename:     `${fileNamePrefix}_${currentViewClass}_${activeYear}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+            };
+
+            // Tạo PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                showToast("Đã tải xuống thành công Báo Cáo PDF!", "success");
+            }).catch(err => {
+                showToast("Lỗi khi xuất PDF", "error");
+            });
+        }
+        // Biến lưu trữ timeout của Debounce
+        let saveTimeout;
+
+        // Hàm xử lý nhập liệu thông minh (Không làm giật/mất focus bảng)
+        function handleInputAcademic(tId, mId, field, val, inputEl) {
+            let setKey = currentSheet === 'canam' ? 'final' : currentSheet; 
+            if (state.settings[`${setKey}Locked`]) return;
+
+            // 1. Cập nhật vào RAM (State) ngay lập tức
+            let t = state.teams.find(x => x.id == tId); 
+            let m = t.members.find(x => x.id == mId);
+            if (field === 'finalComment') { m.academic.finalComment = val; } 
+            else { m.academic[currentSheet][field] = val; }
+
+            // 2. Tính toán và Cập nhật trực tiếp số liệu ĐTB lên giao diện mà không re-render toàn bảng
+            if (field !== 'finalComment') {
+                let avgCell = inputEl.closest('tr').querySelector('.dtb-cell');
+                if(avgCell) {
+                    let newAvg = calcTermAvg(m, currentSheet);
+                    avgCell.innerText = newAvg;
+                }
+            }
+
+            // 3. Debounce: Đợi ngừng gõ 1.2 giây rồi mới âm thầm đẩy lên đám mây
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                autoSave();
+                // Tùy chọn hiển thị một thông báo mờ nho nhỏ góc trái (Không dùng showToast để tránh spam màn hình)
+                console.log("Đã tự động lưu nháp điểm số.");
+            }, 1200);
+        }
         // --- XỬ LÝ GIAO DIỆN DARK MODE ---
         function toggleDarkMode() {
             const body = document.body;
@@ -2296,6 +2358,12 @@
                 let p = m.profile || { gioiTinh: '', ngaySinh: '', ngayRT: '', noiRT: '', ngayRLLD: '', noiRLLD: '', hoTenCha: '', sdtCha: '', hoTenMe: '', sdtMe: '', diaChi: '', ghiChu: '' };
                 tbody.innerHTML += `<tr>
                     <td>${stt++}</td>
+                    <td class="text-left"><b>${esc(m.name)}</b><br><span style="font-size:0.75rem; color:var(--text-muted);">${esc(m.tenThanh)}</span></td>
+                    <td style="font-weight:bold; color:var(--warning); cursor:pointer; text-decoration:underline;" onclick="showHistory(${t.id}, ${m.id})" title="Xem hồ sơ trừ điểm">${cc}</td>
+                    <td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.m15}" oninput="handleInputAcademic(${t.id}, ${m.id}, 'm15', this.value, this)" ${canEdit?'':'disabled'}></td>
+                    <td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.t1}" oninput="handleInputAcademic(${t.id}, ${m.id}, 't1', this.value, this)" ${canEdit?'':'disabled'}></td>
+                    <td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.thi}" oninput="handleInputAcademic(${t.id}, ${m.id}, 'thi', this.value, this)" ${canEdit?'':'disabled'}></td>
+                    <td class="dtb-cell" style="font-weight:bold; color:var(--primary);">${avg}</td>
                     <td><input type="text" class="excel-input text-left" value="${esc(m.tenThanh)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'tenThanh', this.value)" ${isReadonly?'disabled':''}></td>
                     <td><input type="text" class="excel-input text-left" style="font-weight: 600;" value="${esc(m.name)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'name', this.value)" ${isReadonly?'disabled':''}></td>
                     <td><select class="excel-input" onchange="updateStudentProfile(${t.id}, ${m.id}, 'gioiTinh', this.value)" ${isReadonly?'disabled':''}><option value="0" ${p.gioiTinh=='0'?'selected':''}>Nam</option><option value="1" ${p.gioiTinh=='1'?'selected':''}>Nữ</option><option value="" ${p.gioiTinh==''?'selected':''}></option></select></td>
