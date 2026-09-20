@@ -10,6 +10,8 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- Thêm ngay dưới dòng khai báo Chart.js và SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -21,6 +23,59 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     
     <style>
+        /* ================= DARK MODE GLASSMORPHISM ================= */
+        body.dark-mode {
+            --bg-sidebar: rgba(15, 23, 42, 0.95);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            background-color: #0f172a;
+            /* Mesh gradient phiên bản tối */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 51, 204, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(220, 38, 38, 0.2) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(253, 224, 71, 0.1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(0, 51, 204, 0.3) 0px, transparent 50%);
+        }
+        
+        body.dark-mode .excel-table th { background: rgba(15, 23, 42, 0.8); color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        body.dark-mode .excel-table td { background: transparent; color: #f1f5f9; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        body.dark-mode .excel-table tr:hover td { background: rgba(255,255,255,0.05); }
+        body.dark-mode .excel-input, body.dark-mode .form-group input, body.dark-mode .form-group textarea, body.dark-mode .form-group select, body.dark-mode .att-select { 
+            background: rgba(15, 23, 42, 0.6); color: white; border-color: rgba(255,255,255,0.2); 
+        }
+        body.dark-mode .card-header { background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        body.dark-mode .history-item { border-bottom-color: rgba(255,255,255,0.1); }
+        body.dark-mode .expandable-item { background: rgba(30, 41, 59, 0.6); border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .counter-row { background: rgba(15, 23, 42, 0.5); border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .btn-count { background: rgba(30, 41, 59, 0.8); color: white; border-color: rgba(255,255,255,0.2); }
+        /* ================= SKELETON LOADING ================= */
+        .skeleton-box {
+            height: 20px; border-radius: 4px; width: 100%;
+            background: linear-gradient(90deg, rgba(203,213,225,0.4) 25%, rgba(241,245,249,0.7) 50%, rgba(203,213,225,0.4) 75%);
+            background-size: 200% 100%; animation: skeleton-loading 1.5s infinite;
+        }
+        body.dark-mode .skeleton-box {
+            background: linear-gradient(90deg, rgba(51,65,85,0.6) 25%, rgba(71,85,105,0.8) 50%, rgba(51,65,85,0.6) 75%);
+        }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        /* ================= TÙY CHỈNH SWEETALERT2 GLASSMORPHISM ================= */
+        .glass-swal {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(16px) saturate(180%) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-main) !important;
+            border-radius: var(--radius-lg) !important;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2) !important;
+        }
+        .glass-swal .swal2-title { color: var(--text-main) !important; font-family: 'Playfair Display', serif; }
+        .glass-swal .swal2-html-container { color: var(--text-muted) !important; }
+        .glass-swal .swal2-input { 
+            background: rgba(255,255,255,0.5) !important; 
+            border: 1px solid var(--border) !important; 
+            color: var(--text-main) !important; 
+        }
         /* Hiệu ứng bóng ma (Ghost) khi kéo thả học sinh */
         .sortable-ghost { 
             opacity: 0.3; 
@@ -633,6 +688,10 @@
                 </div>
                 <div style="color: var(--text-muted); font-weight: 500; display: none;" id="desktopClock">
                     <i class="fa-regular fa-clock"></i> <span id="currentTime"></span>
+                </div>
+                <!-- Nút gạt Theme -->
+                <div class="notification-icon" onclick="toggleDarkMode()" title="Chuyển Sáng/Tối">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
                 </div>
                 <!-- Vùng Chuông Thông Báo -->
                 <div class="notification-wrapper">
@@ -1311,6 +1370,81 @@
             </div> <!-- THÊM DÒNG NÀY: Đóng thẻ content-area -->
     </main> <!-- THÊM DÒNG NÀY: Đóng thẻ main-content -->
     <script>
+        // --- XỬ LÝ GIAO DIỆN DARK MODE ---
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            
+            // Cập nhật icon
+            const icon = document.getElementById('themeIcon');
+            if(icon) {
+                icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                icon.style.color = isDark ? '#fde047' : 'inherit';
+            }
+            
+            // Lưu trạng thái
+            localStorage.setItem('LMS_THEME_V44', isDark ? 'dark' : 'light');
+            
+            // Cập nhật lại màu chữ của Chart.js nếu biểu đồ đang hiển thị
+            if(document.getElementById('tab-dashboard').classList.contains('active')) renderDashboard();
+        }
+
+        // Kiểm tra ngay khi tải trang (Đặt ở hàm document.addEventListener('DOMContentLoaded', ...))
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (localStorage.getItem('LMS_THEME_V44') === 'dark') {
+                document.body.classList.add('dark-mode');
+                setTimeout(() => {
+                    const icon = document.getElementById('themeIcon');
+                    if(icon) { icon.className = 'fa-solid fa-sun'; icon.style.color = '#fde047'; }
+                }, 100);
+            }
+        // --- 1. GHI ĐÈ HÀM showToast BẰNG SWEETALERT2 ---
+        window.showToast = function(msg, type = 'success') {
+            Swal.fire({
+                toast: true, position: 'top-end', 
+                icon: type === 'error' ? 'error' : (type === 'warning' ? 'warning' : 'success'),
+                title: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true,
+                customClass: { popup: 'glass-swal' }
+            });
+        };
+
+        // --- 2. HÀM THAY THẾ confirm() ---
+        // Lưu ý: Hàm này trả về Promise, nên khi dùng phải thêm await
+        window.appConfirm = function(title, text) {
+            return Swal.fire({
+                title: title, text: text, icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#dc2626',
+                confirmButtonText: 'Đồng Ý', cancelButtonText: 'Hủy Bỏ',
+                background: 'rgba(255, 255, 255, 0.8)', backdrop: 'rgba(0,0,0,0.4)',
+                customClass: { popup: 'glass-swal' }
+            }).then(result => result.isConfirmed);
+        };
+
+        // --- 3. HÀM THAY THẾ prompt() ---
+        window.appPrompt = function(title, placeholderText) {
+            return Swal.fire({
+                title: title, input: 'text', inputPlaceholder: placeholderText,
+                showCancelButton: true, confirmButtonText: 'Xác Nhận', cancelButtonText: 'Hủy',
+                customClass: { popup: 'glass-swal' },
+                inputValidator: (value) => { if (!value) return 'Bạn cần nhập thông tin này!'; }
+            }).then(result => result.isConfirmed ? result.value : null);
+        };
+        // HÀM HIỂN THỊ SKELETON CHO BẢNG
+        function showTableSkeleton(tbodyId, columnsCount, rowsCount = 5) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+            let skeletonHTML = '';
+            for (let i = 0; i < rowsCount; i++) {
+                skeletonHTML += `<tr>`;
+                for (let j = 0; j < columnsCount; j++) {
+                    let width = j === 0 ? '30%' : (Math.random() * 40 + 50) + '%';
+                    skeletonHTML += `<td><div class="skeleton-box" style="width: ${width};"></div></td>`;
+                }
+                skeletonHTML += `</tr>`;
+            }
+            tbody.innerHTML = skeletonHTML;
+        }
         // === CẤU HÌNH API FIREBASE ===
         const firebaseConfig = {
             apiKey: "AIzaSyBc6i-ipiKnR1lwIIna597PyFeRB5jKhRI",
@@ -2032,9 +2166,17 @@
         }
 
         async function loadClassData() {
+            // HIỆN SKELETON TẠI CÁC TAB QUAN TRỌNG TRƯỚC KHI TẢI
+            showTableSkeleton('studentProfilesTbody', 16, 7);
+            showTableSkeleton('attendanceTbody', 6, 7);
+            showTableSkeleton('academicTbody', 7, 7);
+            
             let key = `classes/${activeYear}/${currentViewClass}`;
             let raw = await fetchFromDB(key, null);
             state = normalizeData(raw); 
+            
+            // Xóa skeleton và render data thật
+            renderCurrentTab();
         }
 
         function autoSave() { 
@@ -2614,19 +2756,16 @@ function updateTeamWallet(tId, delta) {
     // Nếu là thao tác Trừ tiền, hiện Popup hỏi lý do
     let reason = "Biến động số dư";
     if (delta < 0) {
-        if (currentBalance + delta < 0) {
-            return showToast("Lỗi: Tổ này không đủ tiền trong ví để trừ!", "error");
-        }
-        reason = prompt(`Bạn đang TRỪ ${Math.abs(delta)}đ của Tổ ${t.name}.\nVui lòng nhập lý do trừ tiền (Ví dụ: Mua đồ chơi, Phạt...):`);
-        if (reason === null) return; // Người dùng bấm Hủy
-        if (reason.trim() === '') reason = "Trừ tiền không rõ lý do";
-    } else {
-        // Nếu là thao tác Cộng tiền (có thể hỏi lý do hoặc để mặc định)
-        let note = prompt(`Bạn đang CỘNG ${delta}đ cho Tổ ${t.name}.\nNhập lý do cộng (Để trống nếu cộng điểm thưởng bình thường):`);
-        if (note === null) return;
-        reason = note.trim() !== '' ? note.trim() : "Điểm thưởng phát sinh";
-    }
-
+                if (currentBalance + delta < 0) return showToast("Lỗi: Tổ này không đủ tiền!", "error");
+                // THAY THẾ PROMPT MẶC ĐỊNH BẰNG APPPROMPT
+                reason = await appPrompt(`Trừ ${Math.abs(delta)}đ của ${t.name}`, "Nhập lý do trừ tiền (VD: Phạt, Mua đồ...)");
+                if (reason === null) return;
+                if (reason.trim() === '') reason = "Trừ tiền không rõ lý do";
+            } else {
+                let note = await appPrompt(`Cộng ${delta}đ cho ${t.name}`, "Nhập lý do (Bỏ trống nếu là thưởng điểm)");
+                if (note === null) return;
+                reason = note.trim() !== '' ? note.trim() : "Điểm thưởng phát sinh";
+            }
     // Thực hiện giao dịch
     t.stats['viTien'] += delta;
     
