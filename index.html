@@ -22,6 +22,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <!-- THÊM DÒNG NÀY VÀO DƯỚI CÙNG -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <!-- Cấu hình PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0033cc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="Logo_TNTT_HIV.jpg">
     
     <style>
         /* ================= DARK MODE GLASSMORPHISM ================= */
@@ -4574,6 +4581,18 @@ function deleteMoneyTransaction(tId, transId) {
             XLSX.utils.book_append_sheet(workbook, worksheet, "HoSo_GLV");
             XLSX.writeFile(workbook, `DanhSach_GLV_${activeYear}.xlsx`);
             showToast("Đã tải xuống file Excel danh sách GLV!", "success");
+        }
+        // KHỞI ĐỘNG SERVICE WORKER CHO PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('PWA Service Worker đã đăng ký thành công.', registration);
+                })
+                .catch(error => {
+                    console.log('PWA Đăng ký thất bại:', error);
+                });
+            });
         }
     </script>
 </body>
