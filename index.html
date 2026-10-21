@@ -2346,8 +2346,21 @@
             }
         }
 
-        // ================= TAB HỒ SƠ =================
-        allStudents.forEach(item => { 
+       // ================= TAB HỒ SƠ =================
+        function renderStudentProfiles() {
+            let selTeam = document.getElementById('newStuTeam'); if(selTeam) { selTeam.innerHTML = ''; state.teams.forEach(t => { selTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`; }); }
+            const tbody = document.getElementById('studentProfilesTbody'); if(!tbody) return; tbody.innerHTML = '';
+            
+            let allStudents = getAllStudentsSorted();
+            
+            if(allStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="16" style="padding: 3rem; color: #991b1b; background: #fef2f2; font-weight: bold; font-size: 1.1rem; text-align: center; border: 2px dashed #fca5a5;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:8px;"></i> Cơ sở dữ liệu đang trống. Vui lòng sang tab [Cấu Hình Lớp Học] để Nạp file Excel lên Đám mây.</td></tr>`;
+                return;
+            }
+
+            let stt = 1; const isReadonly = currentUser.role === 'collab';
+
+            allStudents.forEach(item => { 
                 let t = item.team; let m = item.m;
                 let p = m.profile || { gioiTinh: '', ngaySinh: '', ngayRT: '', noiRT: '', ngayRLLD: '', noiRLLD: '', hoTenCha: '', sdtCha: '', hoTenMe: '', sdtMe: '', diaChi: '', ghiChu: '' };
                 tbody.innerHTML += `<tr>
