@@ -3888,17 +3888,21 @@ function deleteMoneyTransaction(tId, transId) {
 
                 tbody.innerHTML += `<tr>
                     <td>${stt++}</td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(p.tenThanh)}" onblur="updateGLVProfile('${u.username}', 'tenThanh', this.value)"></td>
-                    
-                    <!-- Ô TÊN ĐĂNG NHẬP: CHỈNH SỬA TRỰC TIẾP -->
-                    <td><input type="text" class="excel-input text-left" value="${esc(u.username)}" onblur="updateGLVUsername('${u.username}', this.value)" style="font-weight: bold; color: var(--primary);"></td>
-                    
-                    <td><input type="text" class="excel-input text-left" value="${esc(displayHoTen)}" onblur="updateGLVProfile('${u.username}', 'hoTen', this.value)" style="font-weight: 600;"></td>
-                    <td><input type="text" class="excel-input" value="${esc(p.ngaySinh)}" onblur="updateGLVProfile('${u.username}', 'ngaySinh', this.value)" placeholder="DD-MM-YYYY"></td>
-                    <td><input type="text" class="excel-input" value="${esc(p.sdt)}" onblur="updateGLVProfile('${u.username}', 'sdt', this.value)"></td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(p.email)}" onblur="updateGLVProfile('${u.username}', 'email', this.value)"></td>
-                    <td><select class="excel-input" onchange="updateGLVProfile('${u.username}', 'bangCap', this.value)">${bangCapOpts}</select></td>
-                    <td><button class="btn-reject" style="padding: 0.35rem 0.65rem; border-radius: 4px; background:#ef4444;" onclick="deleteGLV('${u.username}')" title="Xóa tài khoản này"><i class="fa-solid fa-trash-can"></i></button></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(m.tenThanh)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'tenThanh', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input text-left" style="font-weight: 600;" value="${esc(m.name)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'name', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><select class="excel-input" onchange="updateStudentProfile(${t.id}, ${m.id}, 'gioiTinh', this.value)" ${isReadonly?'disabled':''}><option value="0" ${p.gioiTinh=='0'?'selected':''}>Nam</option><option value="1" ${p.gioiTinh=='1'?'selected':''}>Nữ</option><option value="" ${p.gioiTinh==''?'selected':''}></option></select></td>
+                    <td><input type="text" class="excel-input" value="${esc(p.ngaySinh)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'ngaySinh', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input" value="${esc(p.ngayRT)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'ngayRT', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.noiRT)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'noiRT', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input" value="${esc(p.ngayRLLD)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'ngayRLLD', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.noiRLLD)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'noiRLLD', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.hoTenCha)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'hoTenCha', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input" value="${esc(p.sdtCha)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'sdtCha', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.hoTenMe)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'hoTenMe', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input" value="${esc(p.sdtMe)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'sdtMe', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.diaChi)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'diaChi', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.ghiChu)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'ghiChu', this.value)" ${isReadonly?'disabled':''}></td>
+                    <td><button class="btn-reject" style="padding: 0.35rem 0.65rem; border-radius: 4px; background:#ef4444;" onclick="deleteStudent(${t.id}, ${m.id})" ${isReadonly?'disabled':''} title="Xóa học sinh này"><i class="fa-solid fa-trash-can"></i></button></td>
                 </tr>`;
             });
             renderPasswordList(); // Đồng bộ ngay với bảng Mật Khẩu
