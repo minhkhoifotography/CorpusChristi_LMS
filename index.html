@@ -1042,8 +1042,6 @@
                 <div class="card" style="border-top: 5px solid var(--accent); background: linear-gradient(180deg, #ffffff 0%, #fdfbf7 100%);">
                     <div class="card-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
                         <!-- Thẻ Audio Báo Thắng Cuộc -->
-                        <audio id="winAudio" src="https://actions.google.com/sounds/v1/crowds/crowd_cheer.ogg" preload="auto"></audio>
-                        <audio id="tadaAudio" src="https://actions.google.com/sounds/v1/cartoon/cartoon_success_fanfare.ogg" preload="auto"></audio>
                         
                         <div style="position: relative; width: 100%; max-width: 450px; aspect-ratio: 1/1; margin: 2rem auto;">
                             <!-- Vòng quay canvas -->
@@ -3761,14 +3759,25 @@ function deleteMoneyTransaction(tId, transId) {
             let ts = (t/=d)*t; let tc = ts*t; return b+c*(tc + -3*ts + 3*t);
         }
 
+        function playWinSound() {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+                    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                    const t0 = audioCtx.currentTime + i * 0.13;
+                    o.type = 'triangle'; o.frequency.value = f;
+                    g.gain.setValueAtTime(0.0001, t0);
+                    g.gain.exponentialRampToValueAtTime(0.3, t0 + 0.02);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.5);
+                    o.connect(g); g.connect(audioCtx.destination); o.start(t0); o.stop(t0 + 0.55);
+                });
+            } catch (e) {}
+        }
         function showWinnerModal(name) {
             document.getElementById('winnerModalName').innerText = name;
             document.getElementById('winnerModal').style.display = 'flex';
             
-            let winAu = document.getElementById('winAudio');
-            let tadaAu = document.getElementById('tadaAudio');
-            if(winAu) { winAu.currentTime = 0; winAu.play().catch(e=>{}); }
-            if(tadaAu) { tadaAu.currentTime = 0; tadaAu.play().catch(e=>{}); }
+            playWinSound();
 
             let duration = 3000;
             let end = Date.now() + duration;
@@ -4628,12 +4637,12 @@ function deleteMoneyTransaction(tId, transId) {
         // KHỞI ĐỘNG SERVICE WORKER CHO PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                .then(registration => {
-                    console.log('PWA Service Worker đã đăng ký thành công.', registration);
-                })
-                .catch(error => {
-                    console.log('PWA Đăng ký thất bại:', error);
+                navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+                .then(reg => { reg.update(); })
+                .catch(error => console.log('PWA Đăng ký thất bại:', error));
+                let reloaded = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (reloaded) return; reloaded = true; location.reload();
                 });
             });
         }
