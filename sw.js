@@ -1,26 +1,20 @@
-const CACHE_NAME = 'corpus-lms-v45';
-const ASSETS_TO_CACHE = [
-    './',
-    './index.html',
-    './Logo_TNTT_HIV.jpg'
-];
-
-// Cài đặt và đưa các file quan trọng vào bộ nhớ đệm
-self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            console.log('Opened cache');
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
-    );
+// Service Worker: luôn ưu tiên mạng (network-first) để không bị kẹt bản cũ.
+const CACHE = 'corpus-lms-v2';
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
-
-// Chặn kết nối mạng để ưu tiên tải dữ liệu từ bộ nhớ đệm (Tăng tốc độ x3 lần)
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(response => {
-            // Nếu có trong cache thì trả về ngay, không thì tải từ internet
-            return response || fetch(event.request);
-        })
-    );
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
+  e.respondWith(
+    fetch(req).then(res => {
+      const copy = res.clone();
+      caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+      return res;
+    }).catch(() => caches.match(req))
+  );
 });
