@@ -8,8 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <!-- Thêm ngay dưới dòng khai báo Chart.js và SortableJS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -120,7 +120,7 @@
             --glass-border: rgba(255, 255, 255, 0.6);
             --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
             
-            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px;
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px; --border: #e2e8f0;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
@@ -510,6 +510,18 @@
             gap: 8px;
             margin-bottom: 0 !important;
         }
+    
+        /* ===== BỔ SUNG CSS BỊ THIẾU ===== */
+        .kpi-title { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .kpi-value { font-size: 2.2rem; font-weight: 700; }
+        .btn-lock { background: linear-gradient(135deg, #475569, #64748b); color: #fff; }
+        .btn-locked { background: #cbd5e1 !important; color: #64748b !important; cursor: not-allowed; box-shadow: none !important; }
+        .badge-admin { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+        .font-weight-bold { font-weight: 700; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .mobile-menu-btn { display: none; }
+        @media (max-width: 992px) { .mobile-menu-btn { display: inline-block; } }
+        @media (min-width: 993px) { .sidebar { position: sticky; top: 0; height: 100vh; align-self: flex-start; } }
     </style>
 </head>
 <body>
@@ -625,8 +637,8 @@
                 <h2 style="font-size: 1.5rem; color: var(--danger);">Cảnh báo Mất Dữ Liệu</h2>
                 <p id="delModalText2" style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem;">Đoạn dữ liệu về ... đó sẽ mất vĩnh viễn. Bạn có muốn xóa nó không?</p>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button class="btn-outline" style="color: var(--danger); border-color: var(--danger);" onclick="executeDelete(false)">Tôi muốn xóa và <b>KHÔNG</b> lưu dữ liệu</button>
-                    <button class="btn-save" onclick="executeDelete(true)"><i class="fa-solid fa-download"></i> Tôi muốn xóa và <b>LƯU</b> dữ liệu (Backup)</button>
+                    <button class="btn-outline" style="color: var(--danger); border-color: var(--danger);" onclick="executeDelete(false, this)">Tôi muốn xóa và <b>KHÔNG</b> lưu dữ liệu</button>
+                    <button class="btn-save" onclick="executeDelete(true, this)"><i class="fa-solid fa-download"></i> Tôi muốn xóa và <b>LƯU</b> dữ liệu (Backup)</button>
                     <button class="btn-primary" onclick="closeDeleteModal()">Tôi không muốn xóa nữa</button>
                 </div>
             </div>
@@ -745,7 +757,7 @@
                 <div class="page-header">
                     <div><h1>Hồ Sơ Sơ Yếu Lý Lịch</h1><p>Danh sách cố định theo thứ tự file Excel gốc.</p></div>
                     <!-- Đặt cạnh nút Xuất Excel -->
-                    <button class="btn-action" style="background: var(--danger);" onclick="exportTableToPDF('academicTable', 'Bang_Diem_Hoc_Ba')">
+                    <button class="btn-action" style="background: var(--danger);" onclick="exportTableToPDF('studentProfilesTbody', 'Ho_So_Hoc_Sinh')">
                         <i class="fa-solid fa-file-pdf"></i> Xuất Báo Cáo PDF
                     </button>
                     <button class="btn-action" onclick="exportStudentProfiles()"><i class="fa-solid fa-file-excel"></i> Xuất Excel Lý Lịch</button>
@@ -987,7 +999,7 @@
                                 <div class="form-group"><label>Dán Link (Drive, Canva...)</label><input type="text" id="taskLinkInput" placeholder="https://..."></div>
                                 <div style="text-align: center; font-weight: bold; color: var(--text-muted); margin: 10px 0;">HOẶC</div>
                                 <div class="file-upload-wrapper"><input type="file" id="taskFileInput"><div class="file-upload-btn"><i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; margin-bottom: 5px;"></i><br>Chọn File Upload</div></div>
-                                <button class="btn-primary" style="width: 100%; margin-top: 15px;" onclick="submitTaskProof()"><i class="fa-solid fa-paper-plane"></i> Gửi Minh Chứng</button>
+                                <button class="btn-primary" style="width: 100%; margin-top: 15px;" onclick="submitTaskProof(this)"><i class="fa-solid fa-paper-plane"></i> Gửi Minh Chứng</button>
                             </div>
                             <div id="approvalZone" style="display: none; background: #fefce8; border: 1px solid #fef08a; padding: 15px; border-radius: 8px; margin-top: 15px;">
                                 <h4 style="color: #b45309; margin-bottom: 10px;"><i class="fa-solid fa-gavel"></i> Phê Duyệt</h4>
@@ -1389,7 +1401,7 @@
         function exportTableToPDF(tableId, fileNamePrefix) {
             showToast("Đang khởi tạo PDF, vui lòng không tắt trang...", "info");
             
-            const element = document.getElementById(tableId);
+            let element = document.getElementById(tableId); if (element && element.tagName !== 'TABLE') element = element.closest('table');
             if(!element) return;
 
             // Tùy chỉnh thông số dàn trang (Khổ A4, nằm ngang)
@@ -1413,8 +1425,9 @@
 
         // Hàm xử lý nhập liệu thông minh (Không làm giật/mất focus bảng)
         function handleInputAcademic(tId, mId, field, val, inputEl) {
+            if (field !== 'finalComment' && val !== '') { let n = parseFloat(val); if (isNaN(n) || n < 0 || n > 10) { showToast("Điểm phải nằm trong khoảng 0 đến 10!", "warning"); inputEl.value = ''; val = ''; } }
             let setKey = currentSheet === 'canam' ? 'final' : currentSheet; 
-            if (state.settings[`${setKey}Locked`]) return;
+            if (isSheetLocked(setKey)) return;
 
             // 1. Cập nhật vào RAM (State) ngay lập tức
             let t = state.teams.find(x => x.id == tId); 
@@ -1473,7 +1486,7 @@
         window.showToast = function(msg, type = 'success') {
             Swal.fire({
                 toast: true, position: 'top-end', 
-                icon: type === 'error' ? 'error' : (type === 'warning' ? 'warning' : 'success'),
+                icon: type === 'error' ? 'error' : (type === 'warning' ? 'warning' : (type === 'info' ? 'info' : 'success')),
                 title: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true,
                 customClass: { popup: 'glass-swal' }
             });
@@ -1492,12 +1505,12 @@
         };
 
         // --- 3. HÀM THAY THẾ prompt() ---
-        window.appPrompt = function(title, placeholderText) {
+        window.appPrompt = function(title, placeholderText, required = true) {
             return Swal.fire({
                 title: title, input: 'text', inputPlaceholder: placeholderText,
                 showCancelButton: true, confirmButtonText: 'Xác Nhận', cancelButtonText: 'Hủy',
                 customClass: { popup: 'glass-swal' },
-                inputValidator: (value) => { if (!value) return 'Bạn cần nhập thông tin này!'; }
+                inputValidator: (value) => { if (required && !value) return 'Bạn cần nhập thông tin này!'; }
             }).then(result => result.isConfirmed ? result.value : null);
         };
         // HÀM HIỂN THỊ SKELETON CHO BẢNG
@@ -1610,13 +1623,30 @@
 
                 // Hàm chuyển Tên đăng nhập thành Email giả lập
         function getPseudoEmail(username) {
-            return normalizeStr(username).replace(/[^a-z0-9]/g, '') + "@corpus.lms";
+            return normalizeStr(username).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/[^a-z0-9]/g, '') + "@corpus.lms";
         }
         
         // HÀM MỚI: Đệm mật khẩu để vượt qua bài kiểm tra 6 ký tự của Firebase
         function getSafeFirebasePass(rawPass) {
             return rawPass + "_corpusLMS";
         }
+
+        function rebuildClassDropdowns() {
+            if (!CHI_DOAN_LIST.includes("Hệ Thống Admin")) CHI_DOAN_LIST.push("Hệ Thống Admin");
+            const adminSelect = document.getElementById('adminTopClassSelect'); const regSelect = document.getElementById('regChiDoan');
+            if (adminSelect) {
+                adminSelect.innerHTML = CHI_DOAN_LIST.map(cd => `<option value="${esc(cd)}" ${cd === currentViewClass ? 'selected' : ''}>${esc(cd)}</option>`).join('')
+                    + `<option value="add_new_class" style="font-weight: bold; color: #059669;">+ Thêm lớp mới...</option>`;
+            }
+            if (regSelect) regSelect.innerHTML = CHI_DOAN_LIST.filter(cd => cd !== "Hệ Thống Admin").map(cd => `<option value="${esc(cd)}">${esc(cd)}</option>`).join('');
+        }
+        async function loadClassList() {
+            let cl = toArray(await fetchFromDB('system/classes', null));
+            if (cl.length > 0) CHI_DOAN_LIST = cl;
+            rebuildClassDropdowns();
+        }
+        function saveClassList() { saveToDB('system/classes', CHI_DOAN_LIST); }
+        const BAD_NAME_CHARS = /[.#$\[\]\/"'<>&\\]/;
 
         function toArray(obj) {
             if (!obj) return [];
@@ -1632,8 +1662,7 @@
             data.teams = toArray(data.teams);
             data.teams.forEach(t => {
                 // THÊM DÒNG NÀY VÀO ĐÂY (Ngay dưới dòng 404 của bạn):
-                    if(!t.moneyHistory) t.moneyHistory = [];
-                
+                    t.moneyHistory = toArray(t.moneyHistory); if(!t.stats) t.stats = {};
                 t.members = toArray(t.members);
                 t.members.forEach(m => {
                     
@@ -1724,11 +1753,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const adminSelect = document.getElementById('adminTopClassSelect'); const regSelect = document.getElementById('regChiDoan');
-            CHI_DOAN_LIST.forEach(cd => { if(adminSelect) adminSelect.innerHTML += `<option value="${cd}">${cd}</option>`; if(regSelect && cd !== "Hệ Thống Admin") regSelect.innerHTML += `<option value="${cd}">${cd}</option>`; });
-            
-            // THÊM DÒNG NÀY VÀO ĐỂ TẠO NÚT THÊM LỚP MỚI
-            if(adminSelect) adminSelect.innerHTML += `<option value="add_new_class" style="font-weight: bold; color: #059669;">+ Thêm lớp mới...</option>`;
+            rebuildClassDropdowns();
             
             try { systemYears = JSON.parse(localStorage.getItem(SYSTEM_YEARS_KEY)) || ["2025-2026", "2026-2027"]; } catch(e) { systemYears = ["2025-2026", "2026-2027"]; }
             // ... (Phần code bên dưới giữ nguyên) ...
@@ -1736,11 +1761,14 @@
             setTimeout(async () => {
                 let sYears = await fetchFromDB('system/years', systemYears); systemYears = toArray(sYears);
                 if(systemYears.length === 0) systemYears = ["2025-2026", "2026-2027"];
-                
+                let dy = await fetchFromDB('system/defaultYear', null);
+                if (dy && systemYears.includes(dy)) activeYear = dy;
+                else if (!activeYear || !systemYears.includes(activeYear)) activeYear = systemYears[systemYears.length - 1];
+                localStorage.setItem('LMS_ACTIVE_YEAR_V44', activeYear);
                 authDB = await fetchFromDB('auth', DEFAULT_AUTH);
-                saveToDB('auth', authDB); saveToDB('system/years', systemYears);
+                await loadClassList();
                 renderYearDropdowns();
-            }, 100);
+            }, 800);
 
             setInterval(() => { 
                 let el = document.getElementById('currentTime'); 
@@ -1764,13 +1792,7 @@
             // Thêm tùy chọn tạo năm học mới ở cuối cùng
             globalSelect.innerHTML += `<option value="add_new_year" style="font-weight: bold; color: #059669;">+ Thêm năm học mới...</option>`;
         }
-        function showToast(msg, type = 'success') {
-            const container = document.getElementById('toast-container'); const toast = document.createElement('div');
-            toast.className = `toast ${type}`; toast.innerHTML = `<i class="fa-solid fa-circle-info toast-icon"></i><span class="toast-msg">${msg}</span>`;
-            container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-        function togglePasswordVisibility(id) {
+                function togglePasswordVisibility(id) {
             const input = document.getElementById(id);
             if (!input) return;
             
@@ -1815,6 +1837,7 @@
                 saveToDB(uKey, globalUsers);
             }
             let reqData = await fetchFromDB("requests/" + activeYear, []); roleRequests = toArray(reqData);
+            lockDeadlines = (await fetchFromDB("system/deadlines/" + activeYear, {})) || {};
 
             if (currentViewClass) { await loadClassData(); }
         }
@@ -1826,6 +1849,7 @@
                 
                 if(!name || !pass) return showToast("Vui lòng điền đủ thông tin", "error"); 
                 if(name.toLowerCase() === 'admin') return showToast("Không được mạo danh admin!", "error");
+                if(!activeYear) return showToast("Hệ thống đang tải dữ liệu, vui lòng thử lại sau giây lát!", "warning");
                 
                 const pseudoEmail = getPseudoEmail(name);
                 const safePass = getSafeFirebasePass(pass); // Dùng mật khẩu đã đệm
@@ -1834,7 +1858,7 @@
                     await firebase.auth().createUserWithEmailAndPassword(pseudoEmail, safePass);
                     
                     await loadYearData(); 
-                    globalUsers.push({ username: name, chidoan: cd, role: "collab" }); 
+                    if (!globalUsers.find(u => normalizeStr(u.username) === normalizeStr(name))) globalUsers.push({ username: name, chidoan: cd, role: "collab" }); 
                     saveToDB("users/" + activeYear, globalUsers); 
             
                     // Ghi đồng bộ vào authDB cũ để dự phòng
@@ -1865,7 +1889,7 @@
                 
                     try {
                         let sYears = await fetchFromDB('system/years', ["2025-2026", "2026-2027"]);
-                        systemYears = toArray(sYears); saveToDB('system/years', systemYears);
+                        systemYears = toArray(sYears); await loadClassList();
                 
                         let globalDefaultYear = await fetchFromDB('system/defaultYear', null);
                         if (globalDefaultYear && systemYears.includes(globalDefaultYear)) {
@@ -1887,7 +1911,7 @@
                             await firebase.auth().signInWithEmailAndPassword(pseudoEmail, safePass);
                         } catch (authErr) {
                             // 2. TỰ ĐỘNG DI CHUYỂN (AUTO-MIGRATE) TÀI KHOẢN CŨ SANG FIREBASE AUTH
-                            if (authErr.code === 'auth/invalid-login-credentials' || authErr.code === 'auth/user-not-found' || authErr.code === 'auth/internal-error') {
+                            if (authErr.code === 'auth/invalid-login-credentials' || authErr.code === 'auth/user-not-found' || authErr.code === 'auth/internal-error' || authErr.code === 'auth/invalid-credential') {
                                 
                                 authDB = await fetchFromDB('auth', DEFAULT_AUTH);
                                 let normUserIn = normalizeStr(userIn);
@@ -1929,8 +1953,12 @@
                         
                     } catch (err) {
                         console.error(err);
-                        if (err.message === "Sai tài khoản hoặc mật khẩu!") {
-                            showToast(err.message, "error");
+                        if (err.message === "Sai tài khoản hoặc mật khẩu!" || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
+                            showToast("Sai tài khoản hoặc mật khẩu!", "error");
+                        } else if (err.code === 'auth/email-already-in-use') {
+                            showToast("Mật khẩu không khớp với tài khoản đã kích hoạt. Hãy dùng mật khẩu bạn đã tự đặt.", "error");
+                        } else if (err.code === 'auth/too-many-requests') {
+                            showToast("Thử sai quá nhiều lần, vui lòng đợi vài phút rồi thử lại.", "warning");
                         } else {
                             showToast("Lỗi Hệ Thống: Đăng nhập thất bại", "error");
                         }
@@ -1976,7 +2004,7 @@
                     }
                 }
             
-            function logout() { 
+            function logout() { detachRealtimeListeners(); if (taskListenRef) taskListenRef.off(); 
                 firebase.auth().signOut().then(() => {
                     location.reload(); 
                 });
@@ -2025,10 +2053,18 @@
                 showToast("Lỗi nạp cấu trúc: " + e.message, "error"); 
             }
         }
+        let classRef = null, usersRef = null;
+        function detachRealtimeListeners() {
+            if (classRef) { classRef.off(); classRef = null; }
+            if (usersRef) { usersRef.off(); usersRef = null; }
+        }
         function setupRealtimeListeners() {
             if(!isCloudConnected || !db) return;
+            detachRealtimeListeners();
+            listenToTasks();
             let path = `classes/${activeYear}/${currentViewClass}`;
-            db.ref(path).on('value', (snapshot) => {
+            classRef = db.ref(path);
+            classRef.on('value', (snapshot) => {
                 if(snapshot.exists()) {
                     let data = normalizeData(snapshot.val());
                     if (JSON.stringify(data) !== JSON.stringify(state)) {
@@ -2046,7 +2082,8 @@
                 }
             });
             
-            db.ref(`users/${activeYear}`).on('value', (snapshot) => {
+            usersRef = db.ref(`users/${activeYear}`);
+            usersRef.on('value', (snapshot) => {
                 if(snapshot.exists()) { 
                     globalUsers = toArray(snapshot.val()); 
                     
@@ -2071,8 +2108,12 @@
                     }
                     // -------------------------------------------------------------
 
-                    if(document.getElementById('tab-users').classList.contains('active')) renderUserManagement();
-                    if(document.getElementById('tab-glv-profile').classList.contains('active')) renderGLVProfiles();
+                    const ae = document.activeElement;
+                    const typing = ae && ae.closest && ae.closest('#tab-users, #tab-glv-profile') && ['INPUT', 'SELECT', 'TEXTAREA'].includes(ae.tagName);
+                    if (!typing) {
+                        if(document.getElementById('tab-users').classList.contains('active')) renderUserManagement();
+                        if(document.getElementById('tab-glv-profile').classList.contains('active')) renderGLVProfiles();
+                    }
                 }
             });
         }
@@ -2083,7 +2124,7 @@
             if(document.getElementById('tab-behavior').classList.contains('active')) renderBehaviorTeams();
             if(document.getElementById('tab-students').classList.contains('active')) renderStudentProfiles();
             
-            if(document.getElementById('tab-wheel').classList.contains('active')) {
+            if(document.getElementById('tab-wheel').classList.contains('active') && !isSpinning) {
                 let currentNames = getWheelNames();
                 if (currentNames.length === 0 || (wheelNames.length === 0 && currentNames.length > 0)) {
                     initWheel();
@@ -2108,6 +2149,7 @@
                 }
                 
                 yName = yName.trim();
+                if (BAD_NAME_CHARS.test(yName)) { showToast("Tên năm học không được chứa . # $ [ ] / ' \" < > &", "error"); document.getElementById('globalYearSelect').value = activeYear; return; }
                 if (systemYears.includes(yName)) {
                     showToast("Năm học này đã tồn tại!", "error");
                     document.getElementById('globalYearSelect').value = activeYear;
@@ -2177,6 +2219,7 @@
                 }
                 
                 cName = cName.trim();
+                if (BAD_NAME_CHARS.test(cName)) { showToast("Tên lớp không được chứa . # $ [ ] / ' \" < > &", "error"); document.getElementById('adminTopClassSelect').value = currentViewClass; return; }
                 if (CHI_DOAN_LIST.includes(cName)) {
                     showToast("Lớp này đã tồn tại trong danh sách!", "error");
                     document.getElementById('adminTopClassSelect').value = currentViewClass;
@@ -2184,16 +2227,9 @@
                 }
 
                 // Cập nhật danh sách lớp và set làm lớp hiện tại
-                CHI_DOAN_LIST.push(cName);
+                CHI_DOAN_LIST.push(cName); saveClassList();
                 currentViewClass = cName;
-                
-                // Render lại Menu Lớp Học để hiển thị lớp mới
-                const adminSelect = document.getElementById('adminTopClassSelect');
-                adminSelect.innerHTML = '';
-                CHI_DOAN_LIST.forEach(cd => {
-                    adminSelect.innerHTML += `<option value="${cd}" ${cd === currentViewClass ? 'selected' : ''}>${cd}</option>`;
-                });
-                adminSelect.innerHTML += `<option value="add_new_class" style="font-weight: bold; color: #059669;">+ Thêm lớp mới...</option>`;
+                rebuildClassDropdowns();
                 
                 document.getElementById('topbarChiDoanTxt').innerText = currentViewClass;
 
@@ -2233,6 +2269,7 @@
             if(tabId === 'students') renderStudentProfiles();
             if(tabId === 'wheel') initWheel();
             if(tabId === 'glv-profile') renderGLVProfiles();
+            if(tabId === 'tasks' || tabId === 'reminders') { if(!taskListenRef) listenToTasks(); if(tabId === 'tasks') renderTaskBoard(); else renderReminderBoard(); }
         }
 
         async function loadClassData() {
@@ -2249,7 +2286,11 @@
             renderCurrentTab();
         }
 
-        function autoSave() { 
+        function cacheClassLocal() {
+            try { localStorage.setItem(`classes_${activeYear}_${currentViewClass}`, JSON.stringify(state)); } catch (e) {}
+        }
+        function autoSave() {
+            if (!currentViewClass || currentViewClass === 'Chưa phân công') return; 
             let masterList = [];
             if (state.teams && state.teams.length > 0) {
                 state.teams.forEach(t => {
@@ -2270,6 +2311,12 @@
                 }
         }
 
+        let lockDeadlines = {};
+        function isSheetLocked(setKey) {
+            if (state.settings && state.settings[`${setKey}Locked`]) return true;
+            let dl = lockDeadlines[setKey];
+            return !!(dl && new Date() > new Date(dl));
+        }
         function calcStudentPts(stats) { if(!stats) return 0; let total = 0; CRITERIA.student.forEach(c => total += (stats[c.id] || 0) * c.point); return total; }
         function calcTeamPts(team) { let total = team.members.reduce((sum, m) => sum + calcStudentPts(m.stats), 0); let tStats = team.stats || {}; CRITERIA.team.forEach(c => total += (tStats[c.id] || 0) * c.point); return total; }
         function calcComputedCC(member, term) { let deduction = 0; let history = member.attHistory || {}; for (const [date, record] of Object.entries(history)) { if (record && record.term === term && record.ded) deduction += record.ded; } let cc = 10 + deduction; return cc < 0 ? 0 : cc; }
@@ -2277,7 +2324,9 @@
         function calcYearAvg(hk1Avg, hk2Avg) { let h1 = parseFloat(hk1Avg); let h2 = parseFloat(hk2Avg); if(isNaN(h1) || isNaN(h2)) return ""; return (Math.round(((h1 + h2 * 2) / 3) * 100) / 100).toFixed(2); }
         function getXepLoai(avg) { if(avg === "") return ""; let num = parseFloat(avg); if(num >= 8.0) return "Giỏi"; if(num >= 6.5) return "Khá"; if(num >= 5.0) return "TB"; return "Yếu"; }
 
-        function esc(str) { return str ? str.toString().replace(/"/g, '""') : ""; }
+        function esc(str) { if (str === undefined || str === null) return ""; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+        // Chuỗi an toàn để nhét vào thuộc tính onclick="..."/onchange="..."
+        function jsq(str) { return esc(JSON.stringify(String(str))); }
 
         function deleteStudent(teamId, memberId) {
             if (currentUser.role === 'collab') return showToast("Hỗ Trợ Viên không có quyền xóa!", "error");
@@ -2348,7 +2397,7 @@
 
        // ================= TAB HỒ SƠ =================
         function renderStudentProfiles() {
-            let selTeam = document.getElementById('newStuTeam'); if(selTeam) { selTeam.innerHTML = ''; state.teams.forEach(t => { selTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`; }); }
+            let selTeam = document.getElementById('newStuTeam'); if(selTeam) { selTeam.innerHTML = ''; state.teams.forEach(t => { selTeam.innerHTML += `<option value="${t.id}">${esc(t.name)}</option>`; }); }
             const tbody = document.getElementById('studentProfilesTbody'); if(!tbody) return; tbody.innerHTML = '';
             
             let allStudents = getAllStudentsSorted();
@@ -2365,7 +2414,6 @@
                 let p = m.profile || { gioiTinh: '', ngaySinh: '', ngayRT: '', noiRT: '', ngayRLLD: '', noiRLLD: '', hoTenCha: '', sdtCha: '', hoTenMe: '', sdtMe: '', diaChi: '', ghiChu: '' };
                 tbody.innerHTML += `<tr>
                     <td>${stt++}</td>
-                    <td class="text-left"><b>${esc(m.name)}</b><br><span style="font-size:0.75rem; color:var(--text-muted);">${esc(m.tenThanh)}</span></td>
                     <td><input type="text" class="excel-input text-left" value="${esc(m.tenThanh)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'tenThanh', this.value)" ${isReadonly?'disabled':''}></td>
                     <td><input type="text" class="excel-input text-left" style="font-weight: 600;" value="${esc(m.name)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'name', this.value)" ${isReadonly?'disabled':''}></td>
                     <td><select class="excel-input" onchange="updateStudentProfile(${t.id}, ${m.id}, 'gioiTinh', this.value)" ${isReadonly?'disabled':''}><option value="0" ${p.gioiTinh=='0'?'selected':''}>Nam</option><option value="1" ${p.gioiTinh=='1'?'selected':''}>Nữ</option><option value="" ${p.gioiTinh==''?'selected':''}></option></select></td>
@@ -2388,7 +2436,8 @@
         function updateStudentProfile(teamId, memberId, field, value) {
             if (currentUser.role === 'collab') return;
             const team = state.teams.find(t => t.id == teamId); const member = team.members.find(m => m.id == memberId);
-            if(field === 'tenThanh' || field === 'name') { member[field] = value; } else { member.profile[field] = value; }
+            if(field === 'name' && !value.trim()) { showToast('Họ và Tên không được để trống!', 'warning'); renderStudentProfiles(); return; }
+            if(field === 'tenThanh' || field === 'name') { if (member[field] === value) return; member[field] = value; } else { if ((member.profile[field] || '') === value) return; member.profile[field] = value; }
             autoSave(); 
         }
 
@@ -2430,7 +2479,7 @@
                     <td>${stt++}</td>
                     <td class="text-left">${esc(m.tenThanh)}</td>
                     <td class="text-left" style="font-weight: 600;">${esc(m.name)}${historyBadge}</td>
-                    <td><span class="badge-student">${t.name}</span></td>
+                    <td><span class="badge-student">${esc(t.name)}</span></td>
                     <td><select class="att-select" id="att_status_${m.id}">${errOptions}</select></td>
                     <td><input type="text" class="excel-input text-left" id="att_note_${m.id}" value="${esc(currentRec.note)}" placeholder="Nhập ghi chú..."></td>
                 </tr>`;
@@ -2471,7 +2520,7 @@
             const thead = document.getElementById('academicThead'); const tbody = document.getElementById('academicTbody'); if (!thead || !tbody) return;
             
             let isFinal = currentSheet === 'canam'; let setKey = isFinal ? 'final' : currentSheet;
-            let isReadonly = currentUser.role === 'collab'; let locked = state.settings[`${setKey}Locked`]; let canEdit = !isReadonly && !locked;
+            let isReadonly = currentUser.role === 'collab'; let locked = isSheetLocked(setKey); let canEdit = !isReadonly && !locked;
 
             if (isFinal) { thead.innerHTML = `<tr><th>STT</th><th class="text-left">Họ và Tên</th><th>T.Bình HK1</th><th>T.Bình HK2</th><th>ĐTB Cả Năm</th><th>Xếp Loại</th><th>Nhận Xét Cuối Năm</th></tr>`; } 
             else { thead.innerHTML = `<tr><th>STT</th><th class="text-left">Họ và Tên</th><th>Chuyên Cần (CC)</th><th>KT 15 Phút</th><th>KT 1 Tiết</th><th>Thi Học Kỳ</th><th>Điểm TB</th></tr>`; }
@@ -2493,10 +2542,10 @@
                 let avg1 = calcTermAvg(m, 'hk1'), avg2 = calcTermAvg(m, 'hk2'), final = calcYearAvg(avg1, avg2);
                 if (isFinal) {
                     let xl = getXepLoai(final);
-                    tbody.innerHTML += `<tr><td>${stt++}</td><td class="text-left"><b>${esc(m.name)}</b><br><span style="font-size:0.75rem; color:var(--text-muted);">${esc(m.tenThanh)}</span></td><td>${avg1}</td><td>${avg2}</td><td style="font-weight:bold; color:var(--primary);">${final}</td><td><span style="color:var(--success); font-weight:600;">${xl}</span></td><td><input type="text" class="excel-input text-left" value="${esc(m.academic.finalComment)}" onblur="updateAcademic(${t.id}, ${m.id}, 'finalComment', this.value)" ${canEdit?'':'disabled'} placeholder="Nhập nhận xét..."></td></tr>`;
+                    tbody.innerHTML += `<tr><td>${stt++}</td><td class="text-left"><b>${esc(m.name)}</b><br><span style="font-size:0.75rem; color:var(--text-muted);">${esc(m.tenThanh)}</span></td><td>${avg1}</td><td>${avg2}</td><td style="font-weight:bold; color:var(--primary);">${final}</td><td><span style="color:var(--success); font-weight:600;">${xl}</span></td><td><input type="text" class="excel-input text-left" value="${esc(m.academic.finalComment)}" oninput="handleInputAcademic(${t.id}, ${m.id}, 'finalComment', this.value, this)" ${canEdit?'':'disabled'} placeholder="Nhập nhận xét..."></td></tr>`;
                 } else {
                     let hData = m.academic[currentSheet]; let cc = calcComputedCC(m, currentSheet).toFixed(2); let avg = calcTermAvg(m, currentSheet);
-                    tbody.innerHTML += `<tr><td>${stt++}</td><td class="text-left"><b>${esc(m.name)}</b><br><span style="font-size:0.75rem; color:var(--text-muted);">${esc(m.tenThanh)}</span></td><td style="font-weight:bold; color:var(--warning); cursor:pointer; text-decoration:underline;" onclick="showHistory(${t.id}, ${m.id})" title="Xem hồ sơ trừ điểm">${cc}</td><td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.m15}" onblur="updateAcademic(${t.id}, ${m.id}, 'm15', this.value)" ${canEdit?'':'disabled'}></td><td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.t1}" onblur="updateAcademic(${t.id}, ${m.id}, 't1', this.value)" ${canEdit?'':'disabled'}></td><td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.thi}" onblur="updateAcademic(${t.id}, ${m.id}, 'thi', this.value)" ${canEdit?'':'disabled'}></td><td style="font-weight:bold; color:var(--primary);">${avg}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>${stt++}</td><td class="text-left"><b>${esc(m.name)}</b><br><span style="font-size:0.75rem; color:var(--text-muted);">${esc(m.tenThanh)}</span></td><td style="font-weight:bold; color:var(--warning); cursor:pointer; text-decoration:underline;" onclick="showHistory(${t.id}, ${m.id})" title="Xem hồ sơ trừ điểm">${cc}</td><td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.m15}" oninput="handleInputAcademic(${t.id}, ${m.id}, 'm15', this.value, this)" ${canEdit?'':'disabled'}></td><td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.t1}" oninput="handleInputAcademic(${t.id}, ${m.id}, 't1', this.value, this)" ${canEdit?'':'disabled'}></td><td><input type="number" class="excel-input" step="0.1" min="0" max="10" value="${hData.thi}" oninput="handleInputAcademic(${t.id}, ${m.id}, 'thi', this.value, this)" ${canEdit?'':'disabled'}></td><td class="dtb-cell" style="font-weight:bold; color:var(--primary);">${avg}</td></tr>`;
                 }
             });
             
@@ -2504,11 +2553,11 @@
             if (currentUser.role === 'admin' || currentUser.role === 'lead') { lockBtn = locked ? `<button class="btn-lock" onclick="toggleLockSheet('${setKey}')"><i class="fa-solid fa-lock"></i> Đã Khóa Bảng Điểm</button>` : `<button class="btn-action" style="background:var(--success);" onclick="toggleLockSheet('${setKey}')"><i class="fa-solid fa-lock-open"></i> Mở Khóa Đang Nhập</button>`; }
             document.getElementById('academicActions').innerHTML = lockBtn;
             
-            ['hk1', 'hk2', 'final'].forEach(k => { let i = document.getElementById(`lock-icon-${k === 'final' ? 'canam' : k}`); if(i) i.innerHTML = state.settings[`${k}Locked`] ? '<i class="fa-solid fa-lock" style="font-size:0.7rem;"></i>' : ''; });
+            ['hk1', 'hk2', 'final'].forEach(k => { let i = document.getElementById(`lock-icon-${k === 'final' ? 'canam' : k}`); if(i) i.innerHTML = isSheetLocked(k) ? '<i class="fa-solid fa-lock" style="font-size:0.7rem;"></i>' : ''; });
         }
 
         function updateAcademic(tId, mId, field, val) {
-            let setKey = currentSheet === 'canam' ? 'final' : currentSheet; if (state.settings[`${setKey}Locked`]) return;
+            let setKey = currentSheet === 'canam' ? 'final' : currentSheet; if (isSheetLocked(setKey)) return;
             let t = state.teams.find(x => x.id == tId); let m = t.members.find(x => x.id == mId);
             if (field === 'finalComment') { m.academic.finalComment = val; } else { m.academic[currentSheet][field] = val; }
             autoSave(); renderAcademicGrades();
@@ -2785,7 +2834,7 @@ function updatePoint(tId, mId, critId, delta) {
     updateToCloud(`teams/${tIndex}/members/${mIndex}/stats/${critId}`, m.stats[critId]);
     
     // Lưu dự phòng offline vào máy
-    localStorage.setItem(`LMS_CLASS_V44_${activeYear}_${currentViewClass}`, JSON.stringify(state));
+    cacheClassLocal();
 }
 
 // 2. Hàm chấm điểm tập thể (Đã chống ghi đè)
@@ -2808,7 +2857,7 @@ function updateTeamPoint(tId, critId, delta) {
     updateToCloud(`teams/${tIndex}/stats/${critId}`, t.stats[critId]);
     
     // Lưu dự phòng offline vào máy
-    localStorage.setItem(`LMS_CLASS_V44_${activeYear}_${currentViewClass}`, JSON.stringify(state));
+    cacheClassLocal();
 }
 
         // Hàm mới: Chuyên xử lý giao dịch Ví Tiền (Cộng/Trừ có lý do và lưu lịch sử)
@@ -2833,7 +2882,7 @@ function updateTeamPoint(tId, critId, delta) {
                 if (reason === null) return;
                 if (reason.trim() === '') reason = "Trừ tiền không rõ lý do";
             } else {
-                let note = await appPrompt(`Cộng ${delta}đ cho ${t.name}`, "Nhập lý do (Bỏ trống nếu là thưởng điểm)");
+                let note = await appPrompt(`Cộng ${delta}đ cho ${t.name}`, "Nhập lý do (Bỏ trống nếu là thưởng điểm)", false);
                 if (note === null) return;
                 reason = note.trim() !== '' ? note.trim() : "Điểm thưởng phát sinh";
             }
@@ -2858,7 +2907,7 @@ function updateTeamPoint(tId, critId, delta) {
     // Đồng bộ lên Cloud
     updateToCloud(`teams/${tIndex}/stats/viTien`, t.stats['viTien']);
     updateToCloud(`teams/${tIndex}/moneyHistory`, t.moneyHistory);
-    localStorage.setItem(`LMS_CLASS_V44_${activeYear}_${currentViewClass}`, JSON.stringify(state));
+    cacheClassLocal();
     
     showToast(`Đã ${delta > 0 ? 'cộng' : 'trừ'} tiền thành công!`, "success");
 }
@@ -2868,7 +2917,7 @@ function showMoneyHistory(tId) {
     let t = state.teams.find(x => x.id == tId);
     if (!t) return;
     
-    document.getElementById('moneyModalTitle').innerHTML = `<i class="fa-solid fa-wallet"></i> Sao kê Ví Tiền: ${t.name}`;
+    document.getElementById('moneyModalTitle').innerHTML = `<i class="fa-solid fa-wallet"></i> Sao kê Ví Tiền: ${esc(t.name)}`;
     
     let listHtml = '';
     
@@ -2892,7 +2941,7 @@ function showMoneyHistory(tId) {
                 <div style="flex: 1;">
                     <div style="font-weight:700; color:${color}; font-size: 1.1rem;">${sign}${Math.abs(trans.amount)} ₫</div>
                     <div style="font-size:0.85rem; font-weight: 600; margin-top: 2px;">${esc(trans.reason)}</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${trans.time} - GLV: ${trans.actor}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${trans.time} - GLV: ${esc(trans.actor)}</div>
                 </div>
                 ${btnDelete}
             </div>`;
@@ -2929,7 +2978,7 @@ function deleteMoneyTransaction(tId, transId) {
         // Đồng bộ
         updateToCloud(`teams/${tIndex}/stats/viTien`, t.stats['viTien']);
         updateToCloud(`teams/${tIndex}/moneyHistory`, t.moneyHistory);
-        localStorage.setItem(`LMS_CLASS_V44_${activeYear}_${currentViewClass}`, JSON.stringify(state));
+        cacheClassLocal();
         
         // Render lại giao diện
         showMoneyHistory(tId);
@@ -3078,6 +3127,7 @@ function deleteMoneyTransaction(tId, transId) {
         }
 
         function generateNewClass() {
+            if (currentUser.role === 'collab') return showToast("Hỗ Trợ Viên không có quyền nạp dữ liệu!", "error");
             try {
                 const rawText = document.getElementById('studentListInput').value; 
                 let numTeams = parseInt(document.getElementById('numTeamsInput').value); 
@@ -3253,15 +3303,15 @@ function deleteMoneyTransaction(tId, transId) {
                 if (u.username.toLowerCase() === 'admin') return; 
                 if (u.chidoan === currentViewClass) {
                     let roleName = u.role === 'lead' ? 'GLV Chính' : (u.role === 'assistant' ? 'GLV Phó' : 'Hỗ Trợ');
-                    let btnRemove = `<button class="btn-action" style="background:var(--danger); padding:0.4rem 0.8rem;" onclick="removeGLVFromClass('${u.username}')"><i class="fa-solid fa-user-minus"></i> Loại ra</button>`;
+                    let btnRemove = `<button class="btn-action" style="background:var(--danger); padding:0.4rem 0.8rem;" onclick="removeGLVFromClass(${jsq(u.username)})"><i class="fa-solid fa-user-minus"></i> Loại ra</button>`;
                     if(u.username === currentUser.username) btnRemove = '<span style="color:var(--text-muted);">Tài khoản của bạn</span>';
-                    tbody.innerHTML += `<tr><td>${stt++}</td><td class="text-left font-weight-bold">${u.username}</td><td>${roleName}</td><td>${btnRemove}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>${stt++}</td><td class="text-left font-weight-bold">${esc(u.username)}</td><td>${roleName}</td><td>${btnRemove}</td></tr>`;
                 } else {
-                    addSelect.innerHTML += `<option value="${u.username}">${u.username} (Đang ở ${u.chidoan})</option>`;
+                    addSelect.innerHTML += `<option value="${esc(u.username)}">${esc(u.username)} (Đang ở ${esc(u.chidoan)})</option>`;
                 }
             });
             let selTeam = document.getElementById('newStudentTeam'); 
-            if(selTeam) { selTeam.innerHTML = ''; state.teams.forEach(t => { selTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`; }); }
+            if(selTeam) { selTeam.innerHTML = ''; state.teams.forEach(t => { selTeam.innerHTML += `<option value="${t.id}">${esc(t.name)}</option>`; }); }
         }
 
         function renderSettings() { renderSettingsGLV(); }
@@ -3318,25 +3368,25 @@ function deleteMoneyTransaction(tId, transId) {
                     } else { 
                         // Dropdown Lớp học
                         let classOpts = `<option value="Chưa phân công">Chưa phân công</option>` + CHI_DOAN_LIST.filter(c => c !== "Hệ Thống Admin").map(c => `<option value="${c}" ${u.chidoan === c ? 'selected' : ''}>${c}</option>`).join('');
-                        classCol = `<td><select class="att-select" style="min-width:120px;" onchange="updateUserField('${u.username}', 'chidoan', this.value)">${classOpts}</select></td>`;
+                        classCol = `<td><select class="att-select" style="min-width:120px;" onchange="updateUserField(${jsq(u.username)}, 'chidoan', this.value)">${classOpts}</select></td>`;
                         
                         // Dropdown Nhiệm vụ
                         let nvOpts = DUTY_LIST.map(d => `<option value="${d}" ${(u.nhiemVu || 'Chưa phân công') === d ? 'selected' : ''}>${d}</option>`).join('');
-                        nhiemVuCol = `<td><select class="att-select" style="min-width:150px;" onchange="updateUserField('${u.username}', 'nhiemVu', this.value)">${nvOpts}</select></td>`;
+                        nhiemVuCol = `<td><select class="att-select" style="min-width:150px;" onchange="updateUserField(${jsq(u.username)}, 'nhiemVu', this.value)">${nvOpts}</select></td>`;
                         
                         // Dropdown Ban trực
                         let btOpts = COMMITTEE_LIST.map(b => `<option value="${b}" ${(u.banTruc || 'Chưa phân công') === b ? 'selected' : ''}>${b}</option>`).join('');
-                        banTrucCol = `<td><select class="att-select" style="min-width:140px;" onchange="updateUserField('${u.username}', 'banTruc', this.value)">${btOpts}</select></td>`;
+                        banTrucCol = `<td><select class="att-select" style="min-width:140px;" onchange="updateUserField(${jsq(u.username)}, 'banTruc', this.value)">${btOpts}</select></td>`;
 
                         // Dropdown Phân quyền
-                        actionSelect = `<select class="att-select" onchange="updateUserField('${u.username}', 'role', this.value)"><option value="lead" ${u.role==='lead'?'selected':''}>GLV Chính</option><option value="assistant" ${u.role==='assistant'?'selected':''}>GLV Phó</option><option value="collab" ${u.role==='collab'?'selected':''}>Hỗ Trợ</option></select>`; 
+                        actionSelect = `<select class="att-select" onchange="updateUserField(${jsq(u.username)}, 'role', this.value)"><option value="lead" ${u.role==='lead'?'selected':''}>GLV Chính</option><option value="assistant" ${u.role==='assistant'?'selected':''}>GLV Phó</option><option value="collab" ${u.role==='collab'?'selected':''}>Hỗ Trợ</option></select>`; 
                     }
                 } else { 
                     classCol = `<td style="display:none;"></td>`;
                     actionSelect = `<span style="color:var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-lock"></i> Khóa</span>`; 
                 }
                 
-                tbody.innerHTML += `<tr><td>${stt++}</td><td class="text-left"><b>${u.username}</b></td>${classCol}${nhiemVuCol}${banTrucCol}<td>${roleName}</td><td>${actionSelect}</td></tr>`;
+                tbody.innerHTML += `<tr><td>${stt++}</td><td class="text-left"><b>${esc(u.username)}</b></td>${classCol}${nhiemVuCol}${banTrucCol}<td>${roleName}</td><td>${actionSelect}</td></tr>`;
             });
         }
 
@@ -3372,7 +3422,7 @@ function deleteMoneyTransaction(tId, transId) {
             if(pendings.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted); padding:2rem;">Không có yêu cầu nào đang chờ duyệt.</td></tr>'; return; }
             pendings.forEach(r => {
                 let roleOldStr = r.oldRole === 'lead' ? 'GLV Chính' : (r.oldRole === 'assistant' ? 'GLV Phó' : 'Hỗ Trợ'); let roleNewStr = r.requestedRole === 'lead' ? 'GLV Chính' : (r.requestedRole === 'assistant' ? 'GLV Phó' : 'Hỗ Trợ');
-                tbody.innerHTML += `<tr><td>${r.date}</td><td class="text-left font-weight-bold">${r.username}</td><td>${r.chidoan}</td><td><span style="background:#f1f5f9; padding:0.4rem; border-radius:4px; font-weight:600;">${roleOldStr}</span></td><td><span style="background:#fef3c7; color:#b45309; padding:0.4rem; border-radius:4px; font-weight:700;">${roleNewStr}</span></td><td><div style="display:flex; gap:0.5rem; justify-content:center;"><button class="btn-save" onclick="handleRequest(${r.id}, 'approved')" style="padding:0.4rem 0.8rem;"><i class="fa-solid fa-check"></i> Duyệt</button><button class="btn-reject" onclick="handleRequest(${r.id}, 'rejected')" style="padding:0.4rem 0.8rem;"><i class="fa-solid fa-xmark"></i> Hủy</button></div></td></tr>`;
+                tbody.innerHTML += `<tr><td>${r.date}</td><td class="text-left font-weight-bold">${esc(r.username)}</td><td>${esc(r.chidoan)}</td><td><span style="background:#f1f5f9; padding:0.4rem; border-radius:4px; font-weight:600;">${roleOldStr}</span></td><td><span style="background:#fef3c7; color:#b45309; padding:0.4rem; border-radius:4px; font-weight:700;">${roleNewStr}</span></td><td><div style="display:flex; gap:0.5rem; justify-content:center;"><button class="btn-save" onclick="handleRequest(${r.id}, 'approved')" style="padding:0.4rem 0.8rem;"><i class="fa-solid fa-check"></i> Duyệt</button><button class="btn-reject" onclick="handleRequest(${r.id}, 'rejected')" style="padding:0.4rem 0.8rem;"><i class="fa-solid fa-xmark"></i> Hủy</button></div></td></tr>`;
             });
         }
         function handleRequest(reqId, action) {
@@ -3401,6 +3451,7 @@ function deleteMoneyTransaction(tId, transId) {
                             let name = row[0].toString().trim(); 
                             let cd = row[1].toString().trim(); 
                             let role = row[2] ? row[2].toString().trim().toLowerCase() : "collab";
+                            if (!(['lead', 'assistant', 'collab'].includes(role))) role = "collab";
                             let pass = "1"; // Tự động gán mật khẩu mặc định
                             
                             if (name.toLowerCase() === 'admin') continue;
@@ -3475,7 +3526,7 @@ function deleteMoneyTransaction(tId, transId) {
 
         // ================= TAB: TỔNG KẾT NĂM HỌC =================
         async function renderYearlySummary() {
-            document.getElementById('summaryYearLabel').innerText = activeYear; const tbody = document.getElementById('yearSummaryTbody'); tbody.innerHTML = ''; let stt = 1;
+            loadLockDeadlineInputs(); document.getElementById('summaryYearLabel').innerText = activeYear; const tbody = document.getElementById('yearSummaryTbody'); tbody.innerHTML = ''; let stt = 1;
             
             for (let i = 0; i < CHI_DOAN_LIST.length; i++) {
                 let cd = CHI_DOAN_LIST[i];
@@ -3488,7 +3539,7 @@ function deleteMoneyTransaction(tId, transId) {
                         if(cData.teams && cData.teams.length > 0) {
                             let totalHs = 0; let totalScore = 0; let sumAvg = 0; let countAvg = 0;
                             cData.teams.forEach(t => {
-                                totalHs += t.members.length; let tPoints = t.members.reduce((s, m) => s + calcStudentPts(m.stats), 0); CRITERIA.team.forEach(c => tPoints += (t.stats[c.id] || 0) * c.point); totalScore += tPoints;
+                                totalHs += t.members.length; totalScore += calcTeamPts(t);
                                 t.members.forEach(m => { let avg1 = calcTermAvg(m, 'hk1'); let avg2 = calcTermAvg(m, 'hk2'); let final = calcYearAvg(avg1, avg2); if(final !== "") { sumAvg += parseFloat(final); countAvg++; } });
                             });
                             let classAvgStr = countAvg > 0 ? (sumAvg / countAvg).toFixed(2) : "-";
@@ -3502,16 +3553,22 @@ function deleteMoneyTransaction(tId, transId) {
 
         // ================= HÀM XỬ LÝ LƯU THỜI GIAN KHÓA SỔ =================
         function saveLockDeadline(term) {
+            if (currentUser.role !== 'admin') return showToast("Chỉ Super Admin được thiết lập khóa sổ!", "error");
             let dateVal = document.getElementById(`lockDate${term}`).value;
             let timeVal = document.getElementById(`lockTime${term}`).value;
-
-            if (!dateVal || !timeVal) {
-                return showToast("Vui lòng chọn đầy đủ Ngày và Giờ để thiết lập!", "warning");
-            }
-
-            // Ở đây bạn có thể mở rộng để lưu data lên Firebase vào nhánh: system/deadlines/activeYear
-            // Tạm thời hiển thị Toast thành công để có trải nghiệm UI tốt nhất:
-            showToast(`Đã lưu thời gian khóa sổ thành công!`, "success");
+            if (!dateVal || !timeVal) return showToast("Vui lòng chọn đầy đủ Ngày và Giờ để thiết lập!", "warning");
+            lockDeadlines[term.toLowerCase()] = `${dateVal}T${timeVal}`;
+            saveToDB("system/deadlines/" + activeYear, lockDeadlines);
+            showToast("Đã lưu thời gian khóa sổ thành công!", "success");
+            if (document.getElementById('tab-academic').classList.contains('active')) renderAcademicGrades();
+        }
+        function loadLockDeadlineInputs() {
+            ['Hk1', 'Hk2', 'Final'].forEach(term => {
+                let v = lockDeadlines[term.toLowerCase()] || '';
+                let [d, t] = v.split('T');
+                let de = document.getElementById(`lockDate${term}`), te = document.getElementById(`lockTime${term}`);
+                if (de) de.value = d || ''; if (te) te.value = t || '';
+            });
         }
 
         // ================= VÒNG QUAY MAY MẮN TOÀN DIỆN MỚI =================
@@ -3647,6 +3704,12 @@ function deleteMoneyTransaction(tId, transId) {
             }
         }
 
+        function getWheelIndex() {
+            let deg = (startAngle * 180 / Math.PI + 90) % 360; if (deg < 0) deg += 360;
+            let arcd = arc * 180 / Math.PI;
+            let idx = Math.floor(((360 - deg) % 360) / arcd);
+            return Math.min(Math.max(idx, 0), wheelNames.length - 1);
+        }
         function rotateWheel() {
             let oldAngle = startAngle;
 
@@ -3661,14 +3724,7 @@ function deleteMoneyTransaction(tId, transId) {
             
             // --- CẬP NHẬT TÊN LƯỚT QUA LIÊN TỤC ---
             // Tính toán góc hiện tại để biết mũi tên đang chỉ vào ô nào
-            let degrees = (startAngle * 180 / Math.PI) + 90;
-            let arcd = arc * 180 / Math.PI;
-            // Chuẩn hóa góc về chuẩn 0-360 độ
-            let normalizedDegrees = (360 - (degrees % 360)) % 360; 
-            let currentIndex = Math.floor(normalizedDegrees / arcd);
-            
-            // Đảm bảo không bị lỗi vượt quá mảng
-            if (currentIndex >= wheelNames.length) currentIndex = 0;
+            let currentIndex = getWheelIndex();
             
             // Ép text hiển thị tên hiện tại liên tục
             document.getElementById('winnerName').innerText = wheelNames[currentIndex];
@@ -3680,7 +3736,7 @@ function deleteMoneyTransaction(tId, transId) {
             }
 
             drawWheel();
-            spinTimeout = setTimeout('rotateWheel()', 30);
+            spinTimeout = setTimeout(rotateWheel, 30);
         }
 
         function stopRotateWheel() {
@@ -3688,9 +3744,7 @@ function deleteMoneyTransaction(tId, transId) {
             isSpinning = false;
             isSlowingDown = false;
             
-            let degrees = startAngle * 180 / Math.PI + 90;
-            let arcd = arc * 180 / Math.PI;
-            let index = Math.floor((360 - degrees % 360) / arcd);
+            let index = getWheelIndex();
             
             let text = wheelNames[index];
             lastWinnerIndex = index;
@@ -3779,9 +3833,9 @@ function deleteMoneyTransaction(tId, transId) {
             targetNameToDelete = '';
         }
 
-        async function executeDelete(withBackup) {
-            const btnOriginalText = event.target.innerHTML;
-            event.target.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+        async function executeDelete(withBackup, btn) {
+            btn = btn || document.activeElement; const btnOriginalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
             
             try {
                 if (withBackup) {
@@ -3816,12 +3870,14 @@ function deleteMoneyTransaction(tId, transId) {
                     if(isCloudConnected && db) {
                         await db.ref(`classes/${targetNameToDelete}`).remove();
                         await db.ref(`users/${targetNameToDelete}`).remove();
+                        await db.ref(`tasks/${targetNameToDelete}`).remove();
+                        await db.ref(`system/deadlines/${targetNameToDelete}`).remove();
                     }
                     
                     // Xóa defaultYear nếu đang trùng
                     let globalDefaultYear = await fetchFromDB('system/defaultYear', null);
                     if (globalDefaultYear === targetNameToDelete) {
-                        await db.ref('system/defaultYear').remove();
+                        if (db) await db.ref('system/defaultYear').remove();
                     }
 
                     // Chuyển sang năm học khác (năm cuối cùng còn lại)
@@ -3831,7 +3887,7 @@ function deleteMoneyTransaction(tId, transId) {
                     await loadYearData();
                     
                 } else if (deleteTargetType === 'class') {
-                    CHI_DOAN_LIST = CHI_DOAN_LIST.filter(c => c !== targetNameToDelete);
+                    CHI_DOAN_LIST = CHI_DOAN_LIST.filter(c => c !== targetNameToDelete); saveClassList();
                     
                     // Xóa trên Firebase
                     if(isCloudConnected && db) {
@@ -3841,20 +3897,16 @@ function deleteMoneyTransaction(tId, transId) {
                     // Chuyển sang lớp khác
                     currentViewClass = CHI_DOAN_LIST.find(c => c !== "Hệ Thống Admin");
                     
-                    // Render lại dropdown Lớp
-                    const adminSelect = document.getElementById('adminTopClassSelect');
-                    adminSelect.innerHTML = '';
-                    CHI_DOAN_LIST.forEach(cd => {
-                        adminSelect.innerHTML += `<option value="${cd}" ${cd === currentViewClass ? 'selected' : ''}>${cd}</option>`;
-                    });
-                    adminSelect.innerHTML += `<option value="add_new_class" style="font-weight: bold; color: #059669;">+ Thêm lớp mới...</option>`;
+                    rebuildClassDropdowns();
                     document.getElementById('topbarChiDoanTxt').innerText = currentViewClass;
                     
                     await loadClassData();
                 }
 
+                const deletedName = targetNameToDelete;
                 closeDeleteModal();
-                showToast(`Đã xóa vĩnh viễn ${targetNameToDelete}`, "success");
+                btn.innerHTML = btnOriginalText;
+                showToast(`Đã xóa vĩnh viễn ${deletedName}`, "success");
                 
                 // Khởi động lại luồng lắng nghe và giao diện
                 if(isCloudConnected) {
@@ -3866,41 +3918,32 @@ function deleteMoneyTransaction(tId, transId) {
             } catch (err) {
                 console.error(err);
                 showToast("Lỗi khi xóa: " + err.message, "error");
-                event.target.innerHTML = btnOriginalText;
+                btn.innerHTML = btnOriginalText;
             }
         }
         // ================= XỬ LÝ HỒ SƠ GIÁO LÝ VIÊN & MẬT KHẨU =================
         function renderGLVProfiles() {
-            const tbody = document.getElementById('glvProfilesTbody'); if(!tbody) return; tbody.innerHTML = '';
-            let stt = 1;
+            const tbody = document.getElementById('glvProfilesTbody'); if(!tbody) return;
+            let rows = ''; let stt = 1;
             globalUsers.forEach(u => {
                 if (u.username.toLowerCase() === 'admin') return;
-                let p = u.profile || { tenThanh: '', hoTen: '', ngaySinh: '', sdt: '', email: '', bangCap: '' };
-                let displayHoTen = p.hoTen || u.username; // Hiển thị tạm tên đăng nhập nếu chưa có họ tên
-                
-                // Nạp Dropdown Bằng cấp
-                let bangCapOpts = `<option value="">Chưa cập nhật</option>` + BANG_CAP_LIST.map(b => `<option value="${b}" ${p.bangCap === b ? 'selected' : ''}>${b}</option>`).join('');
-
-                tbody.innerHTML += `<tr>
+                let p = u.profile || {};
+                let un = jsq(u.username);
+                let bangCapOpts = `<option value="">Chưa cập nhật</option>` + BANG_CAP_LIST.map(b => `<option value="${esc(b)}" ${p.bangCap === b ? 'selected' : ''}>${esc(b)}</option>`).join('');
+                rows += `<tr>
                     <td>${stt++}</td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(m.tenThanh)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'tenThanh', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input text-left" style="font-weight: 600;" value="${esc(m.name)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'name', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><select class="excel-input" onchange="updateStudentProfile(${t.id}, ${m.id}, 'gioiTinh', this.value)" ${isReadonly?'disabled':''}><option value="0" ${p.gioiTinh=='0'?'selected':''}>Nam</option><option value="1" ${p.gioiTinh=='1'?'selected':''}>Nữ</option><option value="" ${p.gioiTinh==''?'selected':''}></option></select></td>
-                    <td><input type="text" class="excel-input" value="${esc(p.ngaySinh)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'ngaySinh', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input" value="${esc(p.ngayRT)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'ngayRT', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(p.noiRT)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'noiRT', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input" value="${esc(p.ngayRLLD)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'ngayRLLD', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(p.noiRLLD)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'noiRLLD', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(p.hoTenCha)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'hoTenCha', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input" value="${esc(p.sdtCha)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'sdtCha', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(p.hoTenMe)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'hoTenMe', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input" value="${esc(p.sdtMe)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'sdtMe', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(p.diaChi)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'diaChi', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(p.ghiChu)}" onblur="updateStudentProfile(${t.id}, ${m.id}, 'ghiChu', this.value)" ${isReadonly?'disabled':''}></td>
-                    <td><button class="btn-reject" style="padding: 0.35rem 0.65rem; border-radius: 4px; background:#ef4444;" onclick="deleteStudent(${t.id}, ${m.id})" ${isReadonly?'disabled':''} title="Xóa học sinh này"><i class="fa-solid fa-trash-can"></i></button></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.tenThanh)}" onblur="updateGLVProfile(${un}, 'tenThanh', this.value)"></td>
+                    <td class="text-left" style="font-weight:600;">${esc(u.username)}</td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.hoTen)}" placeholder="${esc(u.username)}" onblur="updateGLVProfile(${un}, 'hoTen', this.value)"></td>
+                    <td><input type="text" class="excel-input" value="${esc(p.ngaySinh)}" onblur="updateGLVProfile(${un}, 'ngaySinh', this.value)"></td>
+                    <td><input type="text" class="excel-input" value="${esc(p.sdt)}" onblur="updateGLVProfile(${un}, 'sdt', this.value)"></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(p.email)}" onblur="updateGLVProfile(${un}, 'email', this.value)"></td>
+                    <td><select class="excel-input" onchange="updateGLVProfile(${un}, 'bangCap', this.value)">${bangCapOpts}</select></td>
+                    <td><button class="btn-reject" style="padding: 0.35rem 0.65rem; border-radius: 4px;" onclick="deleteGLV(${un})" title="Xóa tài khoản này"><i class="fa-solid fa-trash-can"></i></button></td>
                 </tr>`;
             });
-            renderPasswordList(); // Đồng bộ ngay với bảng Mật Khẩu
+            tbody.innerHTML = rows || `<tr><td colspan="9" style="padding: 2rem; color: var(--text-muted);">Chưa có hồ sơ Giáo Lý Viên nào.</td></tr>`;
+            renderPasswordList();
         }
 
         // HÀM MỚI: Xử lý đổi tên Đăng Nhập cho GLV
@@ -3962,9 +4005,9 @@ function deleteMoneyTransaction(tId, transId) {
 
                 tbody.innerHTML += `<tr>
                     <td>${stt++}</td>
-                    <td><input type="text" class="excel-input text-left" value="${esc(u.username)}" onblur="updateGLVUsername('${u.username}', this.value)" style="font-weight: bold; color: var(--text-main); font-size: 1.05rem;"></td>
+                    <td><input type="text" class="excel-input text-left" value="${esc(u.username)}" onblur="updateGLVUsername(${jsq(u.username)}, this.value)" style="font-weight: bold; color: var(--text-main); font-size: 1.05rem;"></td>
                     <td>
-                        <input type="text" class="excel-input" value="${esc(pass)}" onblur="adminUpdatePassword('${u.username}', this.value)" style="font-family: monospace; font-weight: 600; color: #e11d48; letter-spacing: 1px;" title="Sửa trực tiếp vào đây để đổi mật khẩu">
+                        <input type="text" class="excel-input" value="${esc(pass)}" onblur="adminUpdatePassword(${jsq(u.username)}, this.value)" style="font-family: monospace; font-weight: 600; color: #e11d48; letter-spacing: 1px;" title="Sửa trực tiếp vào đây để đổi mật khẩu">
                     </td>
                 </tr>`;
             });
@@ -3980,7 +4023,7 @@ function deleteMoneyTransaction(tId, transId) {
             if (authDB[finalKey] !== pass) {
                 authDB[finalKey] = pass;
                 saveToDB('auth', authDB);
-                showToast(`Đã thay đổi mật khẩu cho tài khoản: ${username}`, "success");
+                showToast(`Đã lưu mật khẩu cho: ${username} (tài khoản đã kích hoạt cần tự đổi mật khẩu trong Hồ Sơ Cá Nhân)`, "warning");
                 renderPasswordList();
             }
         }
@@ -4053,7 +4096,7 @@ function deleteMoneyTransaction(tId, transId) {
             showToast("Đã xóa tài khoản thành công!", "success");
         }
         // ================= HỆ THỐNG GIAO VIỆC, NHẮC VIỆC & TIẾN ĐỘ TOÀN CỤC =================
-        let globalTasks = [];
+        let globalTasks = []; let taskListenRef = null, taskListenYear = null; window.lastMaxTaskId = 0;
         let currentOpenTaskId = null;
         let storage = null;
         if (typeof firebase !== 'undefined') {
@@ -4067,7 +4110,7 @@ function deleteMoneyTransaction(tId, transId) {
                 assignerSelect.innerHTML = '';
                 globalUsers.forEach(u => {
                     let isMe = u.username === currentUser.username ? ' (Bạn)' : '';
-                    assignerSelect.innerHTML += `<option value="${u.username}" ${u.username === currentUser.username ? 'selected' : ''}>${u.username}${isMe}</option>`;
+                    assignerSelect.innerHTML += `<option value="${esc(u.username)}" ${u.username === currentUser.username ? 'selected' : ''}>${esc(u.username)}${isMe}</option>`;
                 });
             }
             const scopeContainer = document.getElementById('scopeListContainer');
@@ -4110,6 +4153,8 @@ function deleteMoneyTransaction(tId, transId) {
     let titleText = document.getElementById('ctTitle').value.trim();
     let descText = document.getElementById('ctDesc').value.trim();
     let assigner = document.getElementById('ctAssigner').value;
+    if (!titleText) return showToast("Vui lòng nhập tiêu đề!", "warning");
+    if (!db) return showToast("Chưa kết nối đám mây!", "error");
     
     let task = {
         id: Date.now(), type: type, title: titleText, desc: descText,
@@ -4118,9 +4163,11 @@ function deleteMoneyTransaction(tId, transId) {
     };
 
     if (type === 'task') { 
+        if (!document.getElementById('ctDeadline').value) return showToast("Vui lòng chọn hạn chót!", "warning");
         task.deadline = document.getElementById('ctDeadline').value; 
         task.status = 'todo'; 
     } else { 
+        if (!document.getElementById('ctStartDate').value || !document.getElementById('ctEndDate').value || document.getElementById('ctEndDate').value < document.getElementById('ctStartDate').value) return showToast("Khoảng thời gian hiệu lực không hợp lệ!", "warning");
         task.startDate = document.getElementById('ctStartDate').value; 
         task.endDate = document.getElementById('ctEndDate').value; 
         task.status = 'active'; 
@@ -4141,14 +4188,7 @@ function deleteMoneyTransaction(tId, transId) {
             let myNganhFromClass = (u.chidoan && u.chidoan !== "Chưa phân công" && u.chidoan !== "Hệ Thống Admin") ? "Ngành " + u.chidoan.split(' ')[0] : "";
             let myNganhFromDuty = (u.nhiemVu && u.nhiemVu.includes("ngành")) ? "Ngành " + u.nhiemVu.split("ngành ")[1] : "";
 
-            let inScope = false;
-            if (scopes.includes('ALL') || 
-                (u.chidoan && scopes.includes(u.chidoan)) || 
-                (u.banTruc && scopes.includes(u.banTruc)) || 
-                (myNganhFromClass && scopes.includes(myNganhFromClass)) || 
-                (myNganhFromDuty && scopes.includes(myNganhFromDuty))) {
-                inScope = true;
-            }
+            let inScope = isUserInScope(u, scopes);
 
             // Nếu người này nằm trong phạm vi và có khai báo email
             if (inScope && u.profile && u.profile.email && u.profile.email.includes("@")) {
@@ -4164,10 +4204,10 @@ function deleteMoneyTransaction(tId, transId) {
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
                     <h2 style="color: #0033cc;">Thông báo hệ thống Corpus Christi LMS</h2>
                     <p>Chào bạn,</p>
-                    <p>Bạn vừa nhận được một <b>${type === 'task' ? 'Yêu cầu nộp bài' : 'Nhắc nhở'}</b> mới từ <b>${assigner}</b>.</p>
+                    <p>Bạn vừa nhận được một <b>${type === 'task' ? 'Yêu cầu nộp bài' : 'Nhắc nhở'}</b> mới từ <b>${esc(assigner)}</b>.</p>
                     <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #3b82f6; margin: 15px 0;">
-                        <h3 style="margin-top: 0; color: #1e293b;">${titleText}</h3>
-                        <p style="color: #475569; white-space: pre-wrap;">${descText}</p>
+                        <h3 style="margin-top: 0; color: #1e293b;">${esc(titleText)}</h3>
+                        <p style="color: #475569; white-space: pre-wrap;">${esc(descText)}</p>
                         ${type === 'task' ? `<p style="color: #dc2626; font-weight: bold;">Hạn chót: ${new Date(task.deadline).toLocaleString('vi-VN')}</p>` : ''}
                     </div>
                     <p>Vui lòng đăng nhập vào hệ thống LMS để xem chi tiết và xử lý.</p>
@@ -4200,13 +4240,24 @@ function deleteMoneyTransaction(tId, transId) {
     }); // <--- DẤU NGOẶC ĐÓNG CỦA HÀM PROMISE FIREBASE
 } // <--- DẤU NGOẶC NHỌN KẾT THÚC HÀM submitNewTask()
         
+        function isUserInScope(u, scopes) {
+            scopes = toArray(scopes);
+            if (scopes.includes('ALL')) return true;
+            const nganhFromClass = (u.chidoan && u.chidoan !== "Chưa phân công" && u.chidoan !== "Hệ Thống Admin") ? "Ngành " + u.chidoan.split(' ')[0] : "";
+            const nganhFromDuty = (u.nhiemVu && u.nhiemVu.includes("ngành ")) ? "Ngành " + u.nhiemVu.split("ngành ")[1] : "";
+            return !!((u.chidoan && scopes.includes(u.chidoan)) || (u.banTruc && scopes.includes(u.banTruc)) ||
+                      (nganhFromClass && scopes.includes(nganhFromClass)) || (nganhFromDuty && scopes.includes(nganhFromDuty)));
+        }
+
         function listenToTasks() {
             if(!isCloudConnected || !db) return;
             
             // Ngắt kết nối luồng Firebase cũ trước khi nạp luồng mới (Chống lặp dữ liệu)
-            db.ref(`tasks/${activeYear}/global_tasks`).off();
+            if (taskListenRef) { taskListenRef.off(); taskListenRef = null; }
+            if (taskListenYear !== activeYear) { window.lastMaxTaskId = 0; taskListenYear = activeYear; }
             
-            db.ref(`tasks/${activeYear}/global_tasks`).on('value', (snapshot) => {
+            taskListenRef = db.ref(`tasks/${activeYear}/global_tasks`);
+            taskListenRef.on('value', (snapshot) => {
                 globalTasks = [];
                 let isFirstLoad = (window.lastMaxTaskId === 0);
                 let currentMax = window.lastMaxTaskId;
@@ -4224,14 +4275,7 @@ function deleteMoneyTransaction(tId, transId) {
                         if (t.id > currentMax) currentMax = t.id;
                         
                         // 1. Kiểm tra xem User có nằm trong phạm vi nhận việc không
-                        let inScope = false;
-                        if (t.scopes.includes('ALL') || 
-                            (currentUser.chidoan && t.scopes.includes(currentUser.chidoan)) || 
-                            (currentUser.banTruc && t.scopes.includes(currentUser.banTruc)) || 
-                            (myNganhFromClass && t.scopes.includes(myNganhFromClass)) || 
-                            (myNganhFromDuty && t.scopes.includes(myNganhFromDuty))) {
-                            inScope = true;
-                        }
+                        let inScope = isUserInScope(currentUser, t.scopes);
 
                         // Kiểm tra xem User này có phải là tác giả của thông báo không
                         let isCreator = (t.creator === currentUser.username);
@@ -4282,7 +4326,7 @@ function deleteMoneyTransaction(tId, transId) {
                         <div class="task-header">
                             <span class="status-badge ${badgeClass}">${badgeText}</span>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <span style="color: var(--danger); font-size: 0.85rem; font-weight: 600;"><i class="fa-regular fa-clock"></i> ${dlDate.toLocaleDateString('vi-VN')}</span>
+                                <span style="color: var(--danger); font-size: 0.85rem; font-weight: 600;"><i class="fa-regular fa-clock"></i> ${task.deadline ? dlDate.toLocaleDateString('vi-VN') : '—'}</span>
                                 ${delBtn}
                             </div>
                         </div>
@@ -4355,7 +4399,7 @@ function deleteMoneyTransaction(tId, transId) {
                 task.history.forEach(h => {
                     let contentClass = h.action === 'rejected' ? 'rejected' : (h.action === 'approved' ? 'approved' : '');
                     let linkHtml = h.link ? `<br><a href="${h.link}" target="_blank" style="color:var(--primary); font-weight:bold;"><i class="fa-solid fa-paperclip"></i> Mở file đính kèm</a>` : '';
-                    tlHtml += `<div class="timeline-item"><div class="timeline-dot" style="border-color: ${dotColor[h.action] || '#3b82f6'};"></div><div class="timeline-time">${h.time} - Bởi <b>${h.actor}</b></div><div class="timeline-content ${contentClass}">${esc(h.detail)}${linkHtml}</div></div>`;
+                    tlHtml += `<div class="timeline-item"><div class="timeline-dot" style="border-color: ${dotColor[h.action] || '#3b82f6'};"></div><div class="timeline-time">${h.time} - Bởi <b>${esc(h.actor)}</b></div><div class="timeline-content ${contentClass}">${esc(h.detail)}${linkHtml}</div></div>`;
                 });
             }
             document.getElementById('tdTimeline').innerHTML = tlHtml;
@@ -4375,12 +4419,12 @@ function deleteMoneyTransaction(tId, transId) {
             document.getElementById('taskDetailModal').style.display = 'flex';
         }
 
-        async function submitTaskProof() {
+        async function submitTaskProof(btn) {
             let link = document.getElementById('taskLinkInput').value.trim();
             let fileInput = document.getElementById('taskFileInput'); let file = fileInput.files[0];
             if (!link && !file) return showToast("Vui lòng dán link hoặc chọn file!", "warning");
 
-            const submitBtn = event.target; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...'; submitBtn.disabled = true;
+            const submitBtn = btn; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...'; submitBtn.disabled = true;
 
             try {
                 let finalLink = link; let fileName = file ? file.name : "Link đính kèm";
@@ -4396,7 +4440,7 @@ function deleteMoneyTransaction(tId, transId) {
                 task.status = 'pending';
                 task.history.push({ time: new Date().toLocaleString('vi-VN'), action: 'submitted', actor: currentUser.username, detail: `Đã nộp: ${fileName}`, link: finalLink });
 
-                await db.ref(taskPath).set(task);
+                await db.ref(taskPath).update({ status: task.status, history: task.history });
                 showToast("Nộp bài thành công!", "success");
                 openTaskDetail(currentOpenTaskId);
 
@@ -4425,7 +4469,7 @@ function deleteMoneyTransaction(tId, transId) {
             let actionText = action === 'approved' ? 'Đã duyệt đạt' : 'Yêu cầu sửa lại';
             task.history.push({ time: new Date().toLocaleString('vi-VN'), action: action, actor: currentUser.username, detail: feedback ? `${actionText}. Nhận xét: ${feedback}` : actionText });
 
-            db.ref(taskPath).set(task).then(() => {
+            db.ref(taskPath).update({ status: task.status, history: task.history }).then(() => {
                 showToast(action === 'approved' ? "Đã duyệt!" : "Đã trả hồ sơ.", action === 'approved' ? "success" : "info");
                 openTaskDetail(currentOpenTaskId);
             });
@@ -4455,12 +4499,7 @@ function deleteMoneyTransaction(tId, transId) {
             document.getElementById('notiBadgeCount').innerText = '0';
         }
 
-        const originalSwitchTab = switchTab; // Sử dụng biến khác thay vì oldSwitchTab để tránh đụng độ bộ nhớ
-        switchTab = function(tabId, el) {
-            originalSwitchTab(tabId, el);
-            if(tabId === 'tasks' || tabId === 'reminders') { listenToTasks(); }
-        };
-
+        
         // ================= CÁC HÀM XUẤT EXCEL (FIX LỖI THIẾU HÀM) =================
         function exportToCSV() {
             if(!state || !state.teams || state.teams.length === 0) return showToast("Không có dữ liệu để xuất!", "warning");
@@ -4581,6 +4620,10 @@ function deleteMoneyTransaction(tId, transId) {
             XLSX.writeFile(workbook, `DanhSach_GLV_${activeYear}.xlsx`);
             showToast("Đã tải xuống file Excel danh sách GLV!", "success");
         }
+        document.addEventListener('click', (e) => {
+            const w = document.querySelector('.notification-wrapper'); const dd = document.getElementById('notiDropdown');
+            if (dd && w && !w.contains(e.target)) dd.style.display = 'none';
+        });
         // KHỞI ĐỘNG SERVICE WORKER CHO PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
